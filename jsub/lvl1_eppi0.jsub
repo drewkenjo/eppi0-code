@@ -1,0 +1,32 @@
+JOBNAME:  eppi0lvl1
+OS:       general
+TRACK:    analysis
+MEMORY:   2 GB
+PROJECT:  clas12
+COMMAND:
+run-groovy lvl1_eppi0.groovy input.hipo
+
+OTHER_FILES:
+/work/clas12/kenjo/lvl1_eppi0.groovy
+OUTPUT_DATA: lvl1_eppi0.input.hipo
+OUTPUT_TEMPLATE: /volatile/clas12/kenjo/skim_eppi0/lvl1/outbending/lvl1_eppi0.@INPUT_DATA@
+INPUT_DATA: input.hipo
+INPUT_FILES:
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005424.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005479.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005438.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005589.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005437.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005541.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005467.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005556.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005536.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005612.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005480.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005630.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005646.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005548.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005615.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005647.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005598.hipo
+/volatile/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/skim4/skim4_005486.hipo
