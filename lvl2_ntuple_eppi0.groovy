@@ -36,10 +36,12 @@ def phocuts = [GCut.PID, GCut.FORWARD]
 
 def isinb = args[0].contains('inb') || args[0].contains('torus-1')
 def ismc = args[0].contains("cache") || args[0].contains("gemc")
+def israd = args[0].contains("aaorad")
 
 def suff = isinb ? 'inb' : 'outb'
 if(ismc) suff += '.mc'
 else suff += '.qa'
+if(israd) suff += '.aaorad'
 
 def ff = new ROOTFile("lvl2_eppi0.${suff}.root")
 def varlist = 'ex:ey:ez:px:py:pz:g1x:g1y:g1z:g2x:g2y:g2z:esec:psec:g1sec:g2sec:run:status'
