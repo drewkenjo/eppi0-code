@@ -44,7 +44,7 @@ else suff += '.qa'
 def ff = new ROOTFile("lvl2_eppi0.${suff}.root")
 def varlist = 'ex:ey:ez:px:py:pz:g1x:g1y:g1z:g2x:g2y:g2z:esec:psec:g1sec:g2sec:run:status'
 
-if(ismc) varlist += ':ex0:ey0:ez0:px0:py0:pz0'
+if(ismc) varlist += ':dcx1:dcy1:dcz1:ex0:ey0:ez0:px0:py0:pz0'
 else varlist += ':ihel:dcx1:dcy1:dcz1:g1v:g1w:g2v:g2w'
 
 def tt = ff.makeNtuple('h22','title',varlist)
@@ -177,7 +177,9 @@ args.eachParallel{fname->
 								def gele = LorentzVector.withPID(11,*['px','py','pz'].collect{mcb.getFloat(it,0)})
 								def gpro = LorentzVector.withPID(2212,*['px','py','pz'].collect{mcb.getFloat(it,1)})
 
-								vars += [gele.px(), gele.py(), gele.pz(), gpro.px(), gpro.py(), gpro.pz()]
+								def dcx1=procan.getDC1x(), dcy1=procan.getDC1y(), dcz1=procan.getDC1z()
+
+								vars += [dcx1,dcy1,dcz1, gele.px(), gele.py(), gele.pz(), gpro.px(), gpro.py(), gpro.pz()]
 
 							} else {
 								def ihel = evb.getByte("helicity",0)
