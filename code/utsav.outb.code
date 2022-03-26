@@ -1,0 +1,74 @@
+double xx[] = {
+0.0219879, 0.00406117, 0.000287491, 0.0244179, 0.0169383, 0.000121762,
+0.0209204, -0.000675913, -0.00874854, 0.025209, 0.0113607, -0.0104661,
+0.0211029, 0.00524283, 0.0116993, 0.0242328, 0.00706621, -0.0185997,
+0.0240847, 0.0054933, 0.00358604, 0.0264154, 0.0111607, -0.00691424,
+0.0243936, -1.30348e-06, -0.0157793, 0.0222698, 0.0123583, -0.00728148,
+0.0224922, 0.0200913, 0.0337443, 0.0262862, 0.0170036, -0.00152548
+};
+
+  double pars[6][2][3];
+  int ipar=0;
+  for(int isec=0;isec<6;isec++)
+  for(int ivec=0;ivec<2;ivec++) {
+      if (ivec==0) {
+      double dp1=xx[ipar++], dp5=xx[ipar++], dp9=xx[ipar++];
+
+      pars[isec][ivec][0] = (dp1 - 2*dp5 + dp9)/32.;
+      pars[isec][ivec][1] = (-7*dp1)/16. + (5*dp5)/8. - (3*dp9)/16.;
+      pars[isec][ivec][2] = (45*dp1)/32. - (9*dp5)/16. + (5*dp9)/32.;
+    } else {
+      double dp1=xx[ipar++], dp2=xx[ipar++], dp4=xx[ipar++];
+
+      double a = (dp4 - 3*dp2 + 2*dp1) / 6.0;
+      double b = dp2 - dp1 - 3*a;
+      double c = dp1 - a -b;
+
+      pars[isec][ivec][0] = a;
+      pars[isec][ivec][1] = b;
+      pars[isec][ivec][2] = c;
+    }
+  }
+
+  auto dpp = [&](float px, float py, float pz, int sec, int ipart) {
+    double pp = sqrt(px*px + py*py + pz*pz);
+
+    int ivec = ipart==1 ? 1 : 0;
+    double a=pars[sec-1][ivec][0],
+           b=pars[sec-1][ivec][1],
+           c=pars[sec-1][ivec][2];
+
+    double dp = a*pp*pp + b*pp + c;
+   
+    if(ivec == 0)
+    {
+        if(sec == 1)
+        {
+           dp = 0.5*b*pp + 1.7*c;
+        }
+        if(sec == 2)
+        {
+           dp = b*pp + 2.5*c;
+        }
+        if(sec == 3)
+        {
+           dp = 0.5*b*pp + 2.*c;
+        }
+        if(sec == 4)
+        {
+           dp = b*pp + 2.45*c;
+        }
+        if(sec == 5)
+        {
+           dp = b*pp + 1.85*c;
+        }
+        if(sec == 6)
+        {
+           dp = 0.01*b*pp + 1.75*c;
+        }
+    }
+   
+    return dp/pp;
+  };
+
+double fe = dpp(ex,ey,ez,esec,0) + 1;

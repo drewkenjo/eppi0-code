@@ -1,0 +1,8 @@
+Import('env')
+
+for name in Glob("*.cpp"):
+  exe = env.Program(name)
+  ins = env.Install("..", exe)
+  env.Alias("install", "..")
+
+Default("install")

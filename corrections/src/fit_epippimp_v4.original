@@ -1,0 +1,171 @@
+#include "ROOT/RDataFrame.hxx"
+#include "Math/Minimizer.h"
+#include "Math/Factory.h"
+#include "Math/Functor.h"
+#include "Math/VectorUtil.h"
+#include "Math/Vector3D.h"
+#include "Math/Vector4D.h"
+#include "TDatabasePDG.h"
+#include "TRandom2.h"
+#include "TError.h"
+#include "TChain.h"
+#include "TF1.h"
+#include <iostream>
+
+
+int niter = 0;
+int t0 = time(0);
+
+double Chi2(const double *xx) {
+  int ipar=0;
+  double pars[6][3][6];
+  for(int isec=0;isec<6;isec++)
+  for(int ivec=0;ivec<3;ivec++) {
+    double dp11=xx[ipar++], dp13=xx[ipar++], dp15=xx[ipar++];
+    double dp91=xx[ipar++], dp93=xx[ipar++], dp95=xx[ipar++];
+
+    pars[isec][ivec][0] = (9*dp11 - 18*dp13 + 9*dp15 - dp91 + 2*dp93 - dp95)/6400.;
+    pars[isec][ivec][1] = (-9*dp11)/80. + (27*dp13)/160. - (9*dp15)/160. + dp91/80. - (3*dp93)/160. + dp95/160.;
+    pars[isec][ivec][2] = (135*dp11)/64. - (45*dp13)/32. + (27*dp15)/64. - (15*dp91)/64. + (5*dp93)/32. - (3*dp95)/64.;
+    pars[isec][ivec][3] = -dp11/6400. + dp13/3200. - dp15/6400. + dp91/6400. - dp93/3200. + dp95/6400.;
+    pars[isec][ivec][4] = dp11/80. - (3*dp13)/160. + dp15/160. - dp91/80. + (3*dp93)/160. - dp95/160.;
+    pars[isec][ivec][5] = (-15*dp11)/64. + (5*dp13)/32. - (3*dp15)/64. + (15*dp91)/64. - (5*dp93)/32. + (3*dp95)/64.;
+  }
+
+  auto dpp = [&](float px, float py, float pz, int sec, int ivec) {
+    double pp = sqrt(px*px + py*py + pz*pz);
+    double fi = TMath::RadToDeg()*atan2(py,px);
+    fi = fi + (fi<0 && sec>1)*360 - (sec-1)*60;
+
+    fi += ivec==2 ? 10 : 25 + ivec*25;
+
+    double a0=pars[sec-1][ivec][0],
+           b0=pars[sec-1][ivec][1],
+           c0=pars[sec-1][ivec][2],
+           a1=pars[sec-1][ivec][3],
+           b1=pars[sec-1][ivec][4],
+           c1=pars[sec-1][ivec][5];
+
+    double dp = (a0*fi*fi + b0*fi + c0) + (a1*fi*fi + b1*fi + c1)*pp;
+    return dp/pp;
+  };
+
+  double mele = 0.00051099891, mpip = 0.13957, mpim = 0.13957, mpro = 0.938272, mneu = 0.939565;
+  auto beam = ROOT::Math::PxPyPzMVector(0,0,10.604,mele);
+  auto targ = ROOT::Math::PxPyPzMVector(0,0,0,mpro);
+
+  //ROOT::RDataFrame df("h22", "final_ePipPimP.root");
+  TChain h22("h22");
+  h22.Add("skim4fit.esec*.root");
+  ROOT::RDataFrame df(h22);
+
+  auto rdf = df.Define("mmX",[&](float ex,float ey,float ez,float esec,float pipx,float pipy,float pipz,float pipsec,float pimx,float pimy,float pimz,float pimsec) {
+      double fe = dpp(ex,ey,ez,esec,0) + 1;
+      double fpip = dpp(pipx,pipy,pipz,pipsec,1) + 1;
+
+      auto ele = ROOT::Math::PxPyPzMVector(ex*fe,ey*fe,ez*fe,mele);
+      auto pip = ROOT::Math::PxPyPzMVector(pipx*fpip,pipy*fpip,pipz*fpip,mpip);
+
+      if(pimsec==0)
+        return (beam+targ-ele-pip).mass();
+
+      double fpim = dpp(pimx,pimy,pimz,pimsec,2) + 1;
+      auto pim = ROOT::Math::PxPyPzMVector(pimx*fpim,pimy*fpim,pimz*fpim,mpim);
+ 
+      return (beam+targ - ele-pip-pim).mass();
+    }, {"ex","ey","ez","esec","pipx","pipy","pipz","pipsec","pimx","pimy","pimz","pimsec"});
+
+  auto hmm0 = rdf.Filter("pimsec>0").Histo1D({"hmm0","",500,0.5,1.5},"mmX");
+  auto hmm1 = rdf.Filter("pimsec==0").Histo1D({"hmm1","",500,0.5,1.5},"mmX");
+
+  auto f1 = new TF1("f1","gaus(0)+pol1(3)",0,1);
+  auto fpol = new TF1("fpol","pol1",0,1);
+
+  double tot0=0, tot1 = 0;
+  double mn, mu, sig;
+  int ib0, ib1;
+
+  mn = hmm0->GetMean();
+  f1->SetRange(mn-0.08,mn+0.08);
+  f1->SetParameters(10000, mn, 0.04, 1,1);
+  hmm0->Fit(f1,"QR");
+  mu = f1->GetParameter(1);
+  sig = f1->GetParameter(2);
+  f1->SetRange(mu-2.2*sig, mu+2.2*sig);
+  hmm0->Fit(f1,"QR");
+
+  fpol->SetParameters(f1->GetParameter(3), f1->GetParameter(4));
+  ib0 = hmm0->FindBin(mu-2.2*sig);
+  ib1 = hmm0->FindBin(mu+2.2*sig);
+  for(int ib=ib0;ib<ib1;ib++) {
+    double xx = hmm0->GetBinCenter(ib);
+    double yy = hmm0->GetBinContent(ib)*(1.0-fpol->Eval(xx)/f1->Eval(xx));
+    tot0 += yy*pow(xx-mpro,2.0);
+  }
+
+  mn = hmm1->GetMean();
+  f1->SetRange(mn-0.08,mn+0.08);
+  f1->SetParameters(10000, mn, 0.04, 1,1);
+  hmm1->Fit(f1,"QR");
+  mu = f1->GetParameter(1);
+  sig = f1->GetParameter(2);
+  f1->SetRange(mu-2.2*sig, mu+2.2*sig);
+  hmm1->Fit(f1,"QR");
+
+  fpol->SetParameters(f1->GetParameter(3), f1->GetParameter(4));
+  ib0 = hmm1->FindBin(mu-2.2*sig);
+  ib1 = hmm1->FindBin(mu+2.2*sig);
+  for(int ib=ib0;ib<ib1;ib++) {
+    double xx = hmm1->GetBinCenter(ib);
+    double yy = hmm1->GetBinContent(ib)*(1.0-fpol->Eval(xx)/f1->Eval(xx));
+    tot1 += yy*pow(xx-mpro,2.0);
+  }
+
+
+  niter++;
+  if(niter%10==0) {
+    std::cerr<<"iteration #: "<<niter+1<<" "<<time(0)-t0<<" "<<tot0<<" "<<tot1<<std::endl;
+    t0 = time(0);
+  }
+
+
+  return tot0 + tot1;
+}
+
+
+
+int main(int argc, char** argv)
+{
+  ROOT::EnableImplicitMT(18);
+
+  ROOT::Math::Minimizer* minimum = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+  minimum->SetMaxFunctionCalls(100000);
+  minimum->SetMaxIterations(10000);
+  minimum->SetTolerance(0.01);
+  minimum->SetPrintLevel(100);
+
+  int npars = 108;
+  ROOT::Math::Functor f(&Chi2,npars);
+  double step[npars];
+  for(int ipar=0;ipar<npars;ipar++)
+    step[ipar]=0.005;
+
+  minimum->SetFunction(f);
+  for(int ipar=0;ipar<npars;ipar++) {
+    minimum->SetVariable(ipar, Form("par%02d",ipar), 0, step[ipar]);
+    minimum->SetVariableLimits(ipar, -0.1,0.1);
+  }
+
+  minimum->Minimize();
+
+  const double *xs = minimum->X();
+
+  std::cout << "Minimum: f() = " << minimum->MinValue()  << std::endl;
+  for(int ipar=0;ipar<npars;ipar++)
+    std::cout<<xs[ipar]<<std::endl;
+
+  return 0;
+}
+
+
+

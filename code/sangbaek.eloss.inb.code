@@ -1,0 +1,41 @@
+double dc1th = atan2(sqrt(dcx1*dcx1 + dcy1*dcy1), dcz1)*TMath::RadToDeg();
+bool lowerband = dc1th < (-53.14680163254601 + 79.61307254040804*pow(pp-0.3, 0.05739232362022314));
+
+double pcorrpro, thcorrpro, ficorrpro;
+if(lowerband) {
+
+  double const_FD = -0.00051894 - 0.00018104 * thp;
+  double coeff_FD = 3.29466917*0.001 +  5.73663160*0.0001 * thp - 1.40807209 * 0.00001 * thp*thp;
+  pcorrpro = const_FD + coeff_FD/pp + pp;
+
+  const_FD = -0.16742969 + 0.00697925 * thp;
+  coeff_FD = 0.23352115 - 0.01338697 * thp;
+  thcorrpro = const_FD + coeff_FD/pp/pp + thp;
+
+  const_FD = 0.21192125 -0.0115175 * thp;
+  coeff_FD = -8.94307411*0.1 + 1.66349766*0.1 * thp -8.90617559*0.001 * thp * thp + 1.64803754*0.0001 * thp * thp * thp;
+  ficorrpro = const_FD + coeff_FD/pp/pp + fip;
+
+} else {
+
+  double const_FD = -3.03346359*0.1 + 1.83368163*0.01*thp - 2.86486404*0.0001*thp*thp;
+  double coeff_FD =  2.01023276*0.1 - 1.13312215*0.01*thp + 1.82487916*0.0001*thp*thp;
+  pcorrpro = const_FD + coeff_FD/pp + pp;
+
+  const_FD = 2.04334532 * 10 -1.81052405 * thp + 5.32556360*0.01 * thp * thp -5.23157558*0.0001 * thp * thp * thp;
+  coeff_FD = 8.74233279 -7.63869344 * 0.1 * thp + 2.22376362*0.01 * thp * thp -2.16457260*0.0001 * thp * thp * thp;
+  thcorrpro = const_FD + coeff_FD/pp/pp + thp;
+
+  const_FD = 0.54697831 -0.04896981*thp +  0.00111376*thp*thp;
+  coeff_FD = -4.06733541*0.01 + 2.43696202*10*thp -3.36144736*0.1*thp*thp;
+  double coeff2_FD = 2.06378660*10 - 1.42866062*thp + 2.01085440*0.01*thp*thp;
+  ficorrpro = const_FD + coeff_FD*exp(coeff2_FD*pp) + fip;
+
+}
+
+thcorrpro *= TMath::DegToRad();
+ficorrpro *= TMath::DegToRad();
+
+double pxSB = pcorrpro*sin(thcorrpro)*cos(ficorrpro);
+double pySB = pcorrpro*sin(thcorrpro)*sin(ficorrpro);
+double pzSB = pcorrpro*cos(thcorrpro);

@@ -1,0 +1,7 @@
+env = Environment()
+env.ParseConfig("root-config --libs --cflags")
+#env.Append(LIBS = ['Spectrum', 'vdt', 'RDAVIX', 'tbb'])
+#env.Append(LIBS = ['Spectrum', 'tbb', 'vdt'])
+
+Export('env')
+env.SConscript("sconscript", variant_dir="build", duplicate=0)
