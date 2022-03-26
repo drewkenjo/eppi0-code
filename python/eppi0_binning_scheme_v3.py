@@ -1,11 +1,11 @@
 def define_eppi0_bins(rdf, fname):
 	q2s = [
-		   "xb<x1 && q2>2 && q2<(y0 + (xb-x0)/(x1-x0)*(y1-y0)) && xb<x01",
-		   "xb<x1 && q2>2 && q2<(y0 + (xb-x0)/(x1-x0)*(y1-y0)) && xb>x01",
-		   "xb<x1 && q2>2",
-		   "xb>x1 && q2>2 && q2< (y4 + (xb-x4)/(x5-x4)*(y5-y4))",
-		   "xb>x1 && q2>2",
-		  ]
+		"xb<x1 && q2>2 && q2<(y0 + (xb-x0)/(x1-x0)*(y1-y0)) && xb<x01",
+		"xb<x1 && q2>2 && q2<(y0 + (xb-x0)/(x1-x0)*(y1-y0)) && xb>x01",
+		"xb<x1 && q2>2",
+		"xb>x1 && q2>2 && q2< (y4 + (xb-x4)/(x5-x4)*(y5-y4))",
+		"xb>x1 && q2>2",
+		]
 
 	rdf = rdf.Define("iqx","""
 		double x0=0.15, y0=2.63;
@@ -52,8 +52,8 @@ def define_eppi0_bins(rdf, fname):
 
 
 	rdf = rdf.Define("ifi","(int) (phistar/40)")
-	rdf.q2s = q2s
-	rdf.ttgrid = ttgrid
+	#rdf.q2s = q2s
+	#rdf.ttgrid = ttgrid
 	return rdf
 
 
