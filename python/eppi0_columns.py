@@ -1,7 +1,7 @@
 ecloose, ectight, prochi2, prodc, gloosest, gloose, gbeta = range(7)
 
 def define_eppi0_columns_using_proton(df):
-	vals = 'pe,the,fie,pp,thp,fip,pg1,thg1,fig1,pg2,thg2,fig2,mm2,mgg,yy,q2,ww,xb,tt,phistar,ftheta,misse,dpx,dpy,dpz,dphi,dtheta,mmp,dpt'
+	vals = 'pe,the,fie,pp,thp,fip,pg1,thg1,fig1,pg2,thg2,fig2,mm2,mgg,yy,q2,ww,xb,tt,phistar,ftheta,misse,dpx,dpy,dpz,dphi,dtheta,mmp,dpt,tmin'
 
 	rdf = df.Define("vals","""
 	double E0 = 10.6041, Mpro = 0.938272;
@@ -67,6 +67,8 @@ def define_eppi0_columns_using_proton(df):
 	auto lnorm = vqq.Vect().Cross(beam.Vect());
 	auto hnorm = pro.Vect().Cross(vqq.Vect());
 	double phistar = lnorm.Dot(pro.Vect()) > 0 ? 360 - lnorm.Angle(hnorm)*TMath::RadToDeg() : lnorm.Angle(hnorm)*TMath::RadToDeg();
+
+	double tmin = xb*xb*Mpro*Mpro/(1-xb);
 
 	return std::vector<double> {""" + vals+"""};
 	""")
