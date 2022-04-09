@@ -22,6 +22,7 @@ for fname in ["data/lvl2_eppi0.inb.qa.ecorr.pcorr.root", "data/lvl2_eppi0.outb.q
     cut = "&&".join(f"(((int)status)&(1<<{i}))" for i in [prodc,gloosest])
     cut += f"&& abs(dpt)<{dpt} && abs(dphi)<{dphi}"
     cut += "&& thp<44.106+-6.625*pp+1.438*pp*pp"
+    cut += "&& tt>tmin"
 
     df = df.Filter(cut)
 
@@ -34,6 +35,6 @@ for fname in ["data/lvl2_eppi0.inb.qa.ecorr.pcorr.root", "data/lvl2_eppi0.outb.q
 
 
     for dpz,dmm2,rdf in dfs:
-        save(rdf, fname.replace(".root", f".{dpt}_{dphi}_{dpz}_{dmm2}.root"))
+        save(rdf, fname.replace(".root", f".{dpt}_{dphi}_{dpz}_{dmm2}.root").replace("data/","data/syst/"))
 
 
