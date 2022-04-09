@@ -6,10 +6,17 @@ def make_fits(qdf, option):
 	fpar2 = ROOT.TF1("p2","[0]*sin(x*TMath::DegToRad())/(1 + [1]*cos(2*x*TMath::DegToRad()))",0,360)
 	fpar3f = ROOT.TF1("p3f","[0]*sin(x*TMath::DegToRad())/(1 + [1]*cos(x*TMath::DegToRad()) + [2]*cos(2*x*TMath::DegToRad()))",0,360)
 
+	vpkdata = []
+	with open('vpk.output.data') as fvpk:
+		for line in fvpk:
+			vqq,vxx,vtt,vauu1,vauu2 = [float(vv) for vv in line.split()]
+			vpkdata.append((vqq,vxx,vtt,vauu1,vauu2))
+
 	if 'fit' in option:
 		qdf.fit = type("fit", (), {})()
 
 	for fpar in [fpar1, fpar2, fpar3, fpar3f]:
+		fpar.SetLineWidth(1)
 		grt = ROOT.TGraphErrors()
 		for tdf in qdf.tdfs:
 			gr = tdf.grbsa.Clone()
@@ -20,17 +27,22 @@ def make_fits(qdf, option):
 
 			if f0.GetName()=="p3":
 				f0.SetParLimits(1,0,0.3)
-				f0.SetParLimits(2,-1,0)
+				f0.SetParLimits(2,-0.7,0)
 			elif f0.GetName()=="p3f":
-				f0.FixParameter(1,0)
-				f0.FixParameter(2,0)
+				qq,xx,tt = tdf.q2, tdf.xb, tdf.tt
+				_,_,_,auu1,auu2 = sorted(vpkdata, key=lambda vvs: ((vvs[0]-qq)/10.0)**2 + (vvs[1]-xx)**2 + ((vvs[2]-tt)/2.0)**2)[0]
+				f0.FixParameter(1,auu1)
+				f0.FixParameter(2,auu2)
 
 			gr.Fit(f0, 'qr')
 
 			fitbn = type(fpar.GetName(), (), {})()
 			fitbn.grbsa = gr
 			fitbn.fbsa = f0
-			setattr(tdf, fpar.GetName(), fitbn)
+			if 'fit' in option:
+				setattr(tdf, "fit_"+fpar.GetName(), fitbn)
+			else:
+				setattr(tdf, fpar.GetName(), fitbn)
 
 			grt.SetPoint(grt.GetN(), tdf.tt, f0.GetParameter(0))
 			grt.SetPointError(grt.GetN()-1, 0, f0.GetParError(0))
@@ -69,7 +81,7 @@ def make_bsas(tdf):
 
 	for fdf in tdf.fdfs:
 		nsigs, fsigs = [], []
-		if fdf.hneg.GetEntries()>100 and fdf.hpos.GetEntries()>100:
+		if fdf.hneg.GetEntries()>50 and fdf.hpos.GetEntries()>50:
 			for h1 in [fdf.hneg, fdf.hpos]:
 				nevs,binw = h1.GetEntries(),h1.GetBinWidth(1)
 				mu,sig = 0.135, 0.012
