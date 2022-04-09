@@ -102,8 +102,13 @@ double p[12]={6.9439, 1.7523, -1.2875, 0.6822,  0.0, 17.0423, 1.1264,  0.0491, 1
  double S_LTP = 0.;
  */
  //cout << FLUXW << " S_T=" << S_T << " " << EPS << " " << S_L << " " << S_TT << " S_LT=" << S_LT << endl;
- std::cout << EPS<<" "<< S_T << " " << S_L << " " << S_TT << " " << S_LT << std::endl;
+ //std::cout << EPS<<" "<< S_T << " " << S_L << " " << S_TT << " " << S_LT << std::endl;
 
+ double s0 = S_T + EPS*S_L;
+ double auu1 = TMath::Sqrt(2.*EPS*(1.+EPS))*S_LT / s0;
+ double auu2 = EPS * S_TT / s0;
+
+ std::cout << Q2 << " " << xb << " " << -t << " " << auu1 << " " << auu2 << std::endl;
 
  double DVMPX = FLUXW/(2.*TMath::Pi())*( S_T + EPS*S_L + EPS * S_TT  * TMath::Cos(2*PHI_G) + TMath::Sqrt(2.*EPS*(1.+EPS))*S_LT * TMath::Cos(PHI_G) + heli*TMath::Sqrt(2.*EPS*(1.-EPS))*S_LTP * TMath::Sin(2*PHI_G) ) ;
       if(DVMPX<0.) DVMPX=0.;
